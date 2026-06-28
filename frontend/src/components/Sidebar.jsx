@@ -268,7 +268,7 @@ export default function Sidebar({
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }}
         sx={{
-          display: { xs: 'block', md: 'none' },
+          display: { xs: 'block', sm: 'none' },
           '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, border: 'none', bgcolor: '#141720' },
         }}
       >
@@ -278,7 +278,7 @@ export default function Sidebar({
       {/* Desktop sidebar */}
       <Box
         sx={{
-          display: { xs: 'none', md: 'block' },
+          display: { xs: 'none', sm: 'block' },
           width: drawerWidth,
           flexShrink: 0,
           height: '100vh',

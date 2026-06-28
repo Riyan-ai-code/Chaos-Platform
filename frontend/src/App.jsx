@@ -34,60 +34,17 @@ const initialResults = [
   { runId: 'r8', name: 'cpu-stress-api', type: 'CPU Stress', status: 'Completed', namespace: 'target-zone', target: 'api-service', startedAt: '2025-06-25 11:05:00', duration: '2m 10s', impact: 'Low' },
 ];
 
+const API_BASE = 'http://localhost:8000/api';
+
 export default function App() {
   const [selectedView, setSelectedView] = useState('dashboard');
   const [currentCluster, setCurrentCluster] = useState('production');
   const [clusterStatus, setClusterStatus] = useState('Healthy');
   
-  // Experiments list (expanded dynamically to simulate larger list size)
-  const [experiments, setExperiments] = useState(() => {
-    const list = [...initialExperiments];
-    // Generate mock fillers up to 24
-    for (let i = 9; i <= 24; i++) {
-      list.push({
-        id: String(i),
-        name: `filler-experiment-${i}`,
-        description: `Simulated chaos exercise number ${i}`,
-        type: i % 3 === 0 ? 'Pod Kill' : i % 3 === 1 ? 'Network Chaos' : 'CPU Stress',
-        namespace: i % 2 === 0 ? 'target-zone' : 'default',
-        target: i % 2 === 0 ? 'auth-db' : 'redis-cache',
-        status: 'Idle',
-        lastRun: 'Never',
-      });
-    }
-    return list;
-  });
-
-  // Results list (expanded dynamically to simulate 48 results)
-  const [results, setResults] = useState(() => {
-    const list = [...initialResults];
-    const types = ['Pod Kill', 'Network Chaos', 'CPU Stress', 'Memory Stress', 'Pod Delete'];
-    const impacts = ['Low', 'Medium', 'High'];
-    const statuses = ['Completed', 'Completed', 'Completed', 'Failed']; // Bias towards completed
-
-    // Generate mock fillers up to 48
-    for (let i = 9; i <= 48; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - Math.floor(i / 3));
-      date.setHours(date.getHours() - (i % 24));
-      
-      const pad = (n) => String(n).padStart(2, '0');
-      const dateStr = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-
-      list.push({
-        runId: `r${i}`,
-        name: i % 4 === 0 ? 'pod-kill-webapp' : i % 4 === 1 ? 'network-latency' : i % 4 === 2 ? 'cpu-stress-api' : 'memory-stress',
-        type: types[i % types.length],
-        status: statuses[i % statuses.length],
-        namespace: i % 3 === 0 ? 'target-zone' : i % 3 === 1 ? 'default' : 'kube-system',
-        target: i % 3 === 0 ? 'web-app' : i % 3 === 1 ? 'payment-svc' : 'order-service',
-        startedAt: dateStr,
-        duration: `${Math.floor(Math.random() * 5) + 1}m ${Math.floor(Math.random() * 50) + 10}s`,
-        impact: impacts[i % impacts.length],
-      });
-    }
-    return list;
-  });
+  // Experiments list
+  const [experiments, setExperiments] = useState([]);
+  // Results list
+  const [results, setResults] = useState([]);
 
   const [selectedRun, setSelectedRun] = useState(null);
   const [newExpDialogOpen, setNewExpDialogOpen] = useState(false);
@@ -100,11 +57,40 @@ export default function App() {
     autoHeal: true,
   });
 
+  // Fetch data on mount and poll
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [expsRes, resultsRes, healthRes, settingsRes] = await Promise.all([
+          fetch(`${API_BASE}/experiments`),
+          fetch(`${API_BASE}/results`),
+          fetch(`${API_BASE}/cluster/health`),
+          fetch(`${API_BASE}/settings`),
+        ]);
+        
+        if (expsRes.ok) setExperiments(await expsRes.json());
+        if (resultsRes.ok) setResults(await resultsRes.json());
+        if (healthRes.ok) {
+          const data = await healthRes.json();
+          setClusterStatus(data.status);
+        }
+        if (settingsRes.ok) setSettings(await settingsRes.json());
+      } catch (err) {
+        console.warn("Backend API not reachable. Using simulated local state.", err);
+      }
+    }
+    
+    loadData();
+    const interval = setInterval(loadData, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleCreateExperiment = (newExp) => {
+  const handleCreateExperiment = async (newExp) => {
+    // Generate optimistic UI update
     const freshExp = {
       id: String(experiments.length + 1),
       name: newExp.name,
@@ -116,101 +102,129 @@ export default function App() {
       lastRun: 'Never',
     };
     setExperiments([freshExp, ...experiments]);
+
+    // Send API call
+    try {
+      const res = await fetch(`${API_BASE}/experiments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newExp),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        // Replace optimistic entry with actual
+        setExperiments((prev) => prev.map((e) => e.name === created.name ? created : e));
+      }
+    } catch (err) {
+      console.warn("Could not create experiment on backend:", err);
+    }
   };
 
-  const handleRunExperiment = (expId) => {
-    // 1. Find the experiment
-    const expIndex = experiments.findIndex((e) => e.id === expId);
-    if (expIndex === -1) return;
-    const exp = experiments[expIndex];
+  const handleRunExperiment = async (expId) => {
+    // Optimistic UI updates
+    setExperiments((prev) =>
+      prev.map((e) => (e.id === expId ? { ...e, status: 'Running' } : e))
+    );
 
-    // 2. Set experiment status to Running
-    const updatedExperiments = [...experiments];
-    updatedExperiments[expIndex] = { ...exp, status: 'Running' };
-    setExperiments(updatedExperiments);
-
-    // 3. Add a temporary Running Result at the top
-    const runId = `r_${Date.now()}`;
-    const pad = (n) => String(n).padStart(2, '0');
-    const now = new Date();
-    const startedAtStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-
-    const newRun = {
-      runId,
-      name: exp.name,
-      type: exp.type,
-      status: 'Running',
-      namespace: exp.namespace,
-      target: exp.target,
-      startedAt: startedAtStr,
-      duration: '--',
-      impact: 'Pending',
-    };
-    
-    setResults([newRun, ...results]);
-
-    // If cluster was healthy, running an experiment might degrade it slightly (visual flair!)
-    if (clusterStatus === 'Healthy' && (exp.type === 'CPU Stress' || exp.type === 'Memory Stress')) {
-      setTimeout(() => setClusterStatus('Degraded'), 1000);
-    }
-
-    // 4. Simulate delay
-    setTimeout(() => {
-      const isSuccess = Math.random() < settings.successRate;
-      const finalStatus = isSuccess ? 'Completed' : 'Failed';
-      const durationMin = Math.floor(Math.random() * 2);
-      const durationSec = Math.floor(Math.random() * 50) + 10;
-      const durationStr = `${durationMin > 0 ? durationMin + 'm ' : ''}${durationSec}s`;
-      const impactOptions = isSuccess ? ['Low', 'Medium'] : ['Medium', 'High'];
-      const finalImpact = impactOptions[Math.floor(Math.random() * impactOptions.length)];
-
-      // Update experiment status
-      setExperiments((prevExps) => {
-        const idx = prevExps.findIndex((e) => e.id === expId);
-        if (idx === -1) return prevExps;
-        const copy = [...prevExps];
-        copy[idx] = {
-          ...copy[idx],
-          status: finalStatus,
-          lastRun: startedAtStr,
-        };
-        return copy;
+    try {
+      const res = await fetch(`${API_BASE}/experiments/${expId}/run`, {
+        method: 'POST',
       });
+      if (res.ok) {
+        const newRun = await res.json();
+        setResults((prev) => [newRun, ...prev]);
+      }
+    } catch (err) {
+      console.warn("Could not execute experiment on backend:", err);
+      
+      // Local Fallback simulation logic if backend is unreachable
+      const expIndex = experiments.findIndex((e) => e.id === expId);
+      if (expIndex === -1) return;
+      const exp = experiments[expIndex];
+      const runId = `r_${Date.now()}`;
+      const pad = (n) => String(n).padStart(2, '0');
+      const now = new Date();
+      const startedAtStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-      // Update Results entry
-      setResults((prevResults) => {
-        return prevResults.map((r) => {
-          if (r.runId === runId) {
-            return {
-              ...r,
-              status: finalStatus,
-              duration: durationStr,
-              impact: finalImpact,
-            };
-          }
-          return r;
-        });
-      });
+      const newRun = {
+        runId,
+        name: exp.name,
+        type: exp.type,
+        status: 'Running',
+        namespace: exp.namespace,
+        target: exp.target,
+        startedAt: startedAtStr,
+        duration: '--',
+        impact: 'Pending',
+      };
+      setResults((prev) => [newRun, ...prev]);
 
-      // If cluster health degraded and autoHeal is enabled, restore it
-      if (settings.autoHeal) {
-        setTimeout(() => {
-          setClusterStatus('Healthy');
-        }, 3000);
-      } else if (!isSuccess) {
-        // If failed and no auto-heal, degrade cluster further
-        setClusterStatus('Critical');
+      if (clusterStatus === 'Healthy' && (exp.type === 'CPU Stress' || exp.type === 'Memory Stress')) {
+        setClusterStatus('Degraded');
       }
 
-    }, settings.simulationSpeed * 1000);
+      setTimeout(() => {
+        const isSuccess = Math.random() < settings.successRate;
+        const finalStatus = isSuccess ? 'Completed' : 'Failed';
+        const durationMin = Math.floor(Math.random() * 2);
+        const durationSec = Math.floor(Math.random() * 50) + 10;
+        const durationStr = `${durationMin > 0 ? durationMin + 'm ' : ''}${durationSec}s`;
+        const impactOptions = isSuccess ? ['Low', 'Medium'] : ['Medium', 'High'];
+        const finalImpact = impactOptions[Math.floor(Math.random() * impactOptions.length)];
+
+        setExperiments((prevExps) => {
+          const idx = prevExps.findIndex((e) => e.id === expId);
+          if (idx === -1) return prevExps;
+          const copy = [...prevExps];
+          copy[idx] = { ...copy[idx], status: finalStatus, lastRun: startedAtStr };
+          return copy;
+        });
+
+        setResults((prevResults) =>
+          prevResults.map((r) =>
+            r.runId === runId ? { ...r, status: finalStatus, duration: durationStr, impact: finalImpact } : r
+          )
+        );
+
+        if (settings.autoHeal) {
+          setTimeout(() => setClusterStatus('Healthy'), 3000);
+        } else if (!isSuccess) {
+          setClusterStatus('Critical');
+        }
+      }, settings.simulationSpeed * 1000);
+    }
   };
 
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const handleSetClusterStatus = async (status) => {
+    setClusterStatus(status);
+    try {
+      await fetch(`${API_BASE}/cluster/health/${status}`, {
+        method: 'POST',
+      });
+    } catch (err) {
+      console.warn("Could not sync cluster status to backend:", err);
+    }
+  };
+
+  const handleSaveSettings = async (newSettings) => {
+    setSettings(newSettings);
+    try {
+      await fetch(`${API_BASE}/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSettings),
+      });
+    } catch (err) {
+      console.warn("Could not sync settings to backend:", err);
+    }
+  };
+
+  const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#0d0e12' }}>
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#0d0e12', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
         
         {/* Sidebar Responsive Component */}
         <Sidebar
@@ -229,11 +243,12 @@ export default function App() {
           sx={{
             flexGrow: 1,
             p: { xs: 2, sm: 3, md: 4 },
+            width: { sm: 'calc(100% - 240px)' },
             minWidth: 0, // Prevent grid breakout
           }}
         >
           {/* Mobile Top Bar (AppBar visible only on small viewports) */}
-          {!isMdUp && (
+          {!isSmUp && (
             <AppBar position="sticky" sx={{ bgcolor: '#141721', backgroundImage: 'none', mb: 3, borderRadius: 2 }}>
               <Toolbar>
                 <IconButton
@@ -289,9 +304,9 @@ export default function App() {
             <SettingsView
               currentCluster={currentCluster}
               clusterStatus={clusterStatus}
-              setClusterStatus={setClusterStatus}
+              setClusterStatus={handleSetClusterStatus}
               settings={settings}
-              setSettings={setSettings}
+              setSettings={handleSaveSettings}
             />
           )}
         </Box>

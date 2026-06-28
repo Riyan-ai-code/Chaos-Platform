@@ -1,0 +1,15 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 30000 # Map Kubernetes NodePort 30000 to Host Port 3000 (React Frontend)
+    hostPort: 3000
+    listenAddress: "0.0.0.0"
+    protocol: TCP
+  - containerPort: 30001 # Map Kubernetes NodePort 30001 to Host Port 8000 (FastAPI Backend)
+    hostPort: 8000
+    listenAddress: "0.0.0.0"
+    protocol: TCP
+- role: worker
+- role: worker
