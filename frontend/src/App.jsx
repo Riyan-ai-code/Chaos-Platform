@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { Box, CssBaseline, useMediaQuery, IconButton, AppBar, Toolbar, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -60,13 +60,7 @@ export default function App() {
   });
 
   // Results list
-  const [results, setResults] = useState(() => {
-    return [
-      { runId: 'r1', name: 'pod-kill-webapp', type: 'Pod Kill', status: 'Completed', namespace: 'target-zone', target: 'web-app', startedAt: '2025-06-26 10:30:15', duration: '2m 34s', impact: 'Low' },
-      { runId: 'r2', name: 'network-latency', type: 'Network Chaos', status: 'Completed', namespace: 'target-zone', target: 'payment-svc', startedAt: '2025-06-26 10:29:42', duration: '5m 12s', impact: 'Medium' },
-      { runId: 'r3', name: 'cpu-stress-api', type: 'CPU Stress', status: 'Failed', namespace: 'target-zone', target: 'api-service', startedAt: '2025-06-26 10:10:31', duration: '1m 08s', impact: 'High' },
-    ];
-  });
+  const [results, setResults] = useState(() => [...initialResults]);
 
   const [selectedRun, setSelectedRun] = useState(null);
   const [newExpDialogOpen, setNewExpDialogOpen] = useState(false);
