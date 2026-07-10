@@ -37,10 +37,11 @@ jobs:
           gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
 
       - name: Get GKE Credentials
-        run: |
-          gcloud container clusters get-credentials $GKE_CLUSTER \
-            --zone $GKE_ZONE \
-            --project $PROJECT_ID
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          project_id: ${{ env.PROJECT_ID }}
 
       - name: Build Docker Image
         run: |
