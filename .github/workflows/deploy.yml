@@ -21,21 +21,33 @@ jobs:
       contents: read
 
     steps:
+      # Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      # Setup gcloud
       - name: Setup Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
 
+      # Install GKE Auth Plugin
+      - name: Install GKE Auth Plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin --quiet
+
+      # Configure Docker
       - name: Configure Docker
         run: |
           gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
 
+      # Get GKE Credentials
       - name: Get GKE Credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
@@ -43,23 +55,27 @@ jobs:
           location: ${{ env.GKE_ZONE }}
           project_id: ${{ env.PROJECT_ID }}
 
+      # Build Docker Image
       - name: Build Docker Image
         run: |
           docker build \
-            -t asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:${{ github.sha }} \
+            -t asia-south1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ github.sha }} \
             ./frontend
 
+      # Push Docker Image
       - name: Push Docker Image
         run: |
           docker push \
-            asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:${{ github.sha }}
+            asia-south1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ github.sha }}
 
+      # Update Kubernetes Deployment
       - name: Update Kubernetes Deployment
         run: |
           kubectl set image deployment/chaos-frontend \
-          chaos-frontend=asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:${{ github.sha }} \
+          chaos-frontend=asia-south1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ github.sha }} \
           -n target-zone
 
+      # Verify Rollout
       - name: Wait for Rollout
         run: |
           kubectl rollout status deployment/chaos-frontend \
