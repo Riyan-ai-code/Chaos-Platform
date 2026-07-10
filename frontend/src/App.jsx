@@ -229,8 +229,8 @@ export default function App() {
         <Box
           component="main"
           sx={{
-            flex: 1,
-            width: '100%',
+            flexGrow: 1,
+            width: 'calc(100% - 240px)',
             p: { xs: 2, sm: 3, md: 4 },
             minWidth: 0, // Prevent grid breakout
           }}
