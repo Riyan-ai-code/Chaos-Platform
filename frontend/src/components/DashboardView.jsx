@@ -53,33 +53,33 @@ export default function DashboardView({
       desc: 'Kill Random Pods',
       type: 'Pod Kill',
       icon: <SkullIconSVG color="#10b981" size={40} />,
-      borderColor: 'rgba(16, 185, 129, 0.35)',
+      borderColor: 'rgba(16, 185, 129, 0.4)',
       activeBorderColor: '#10b981',
-      bgGlow: 'rgba(16, 185, 129, 0.2)',
-      bgColor: '#091c12',
-      iconBg: 'rgba(16, 185, 129, 0.1)',
+      bgGlow: 'rgba(16, 185, 129, 0.25)',
+      bgColor: '#06170f',
+      iconBg: 'rgba(16, 185, 129, 0.08)',
     },
     {
       title: 'Network Latency',
       desc: 'Inject Latency',
       type: 'Network Chaos',
       icon: <WaveIconSVG color="#3b82f6" size={40} />,
-      borderColor: 'rgba(59, 130, 246, 0.35)',
+      borderColor: 'rgba(59, 130, 246, 0.4)',
       activeBorderColor: '#3b82f6',
-      bgGlow: 'rgba(59, 130, 246, 0.2)',
-      bgColor: '#0a1524',
-      iconBg: 'rgba(59, 130, 246, 0.1)',
+      bgGlow: 'rgba(59, 130, 246, 0.25)',
+      bgColor: '#051122',
+      iconBg: 'rgba(59, 130, 246, 0.08)',
     },
     {
       title: 'CPU/Memory Stress',
       desc: 'Stress Resources',
       type: 'CPU Stress',
       icon: <FireIcon sx={{ fontSize: 40, color: '#f97316' }} />,
-      borderColor: 'rgba(249, 115, 22, 0.35)',
+      borderColor: 'rgba(249, 115, 22, 0.4)',
       activeBorderColor: '#f97316',
-      bgGlow: 'rgba(249, 115, 22, 0.2)',
-      bgColor: '#1c110a',
-      iconBg: 'rgba(249, 115, 22, 0.1)',
+      bgGlow: 'rgba(249, 115, 22, 0.25)',
+      bgColor: '#150d07',
+      iconBg: 'rgba(249, 115, 22, 0.08)',
     },
   ];
 
@@ -158,7 +158,7 @@ export default function DashboardView({
       </Box>
 
       {/* Top Cards Grid */}
-      <Grid container spacing={3} sx={{ width: '100%', margin: 0 }}>
+      <Grid container spacing={3}>
         {quickActions.map((action) => (
           <Grid item xs={12} md={4} key={action.title}>
             <Card
@@ -166,25 +166,25 @@ export default function DashboardView({
               sx={{
                 cursor: 'pointer',
                 background: action.bgColor,
-                border: `1.5px solid ${action.borderColor}`,
+                border: `2px solid ${action.borderColor}`,
                 borderRadius: '16px',
                 position: 'relative',
                 overflow: 'hidden',
                 '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: `0 8px 24px ${action.bgGlow}`,
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 12px 32px ${action.bgGlow}`,
                   borderColor: action.activeBorderColor,
                 },
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
             >
-              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2.5, p: 2.5, '&:last-child': { pb: 2.5 } }}>
+              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 3, p: 3, '&:last-child': { pb: 3 } }}>
                 <Box
                   sx={{
                     bgcolor: action.iconBg,
-                    p: 1.5,
-                    borderRadius: '12px',
-                    border: `1px solid ${action.borderColor}`,
+                    p: 2,
+                    borderRadius: '16px',
+                    border: `1.5px solid ${action.borderColor}`,
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -196,10 +196,10 @@ export default function DashboardView({
                   {action.icon}
                 </Box>
                 <Box>
-                  <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 0.5, fontSize: '1.1rem' }}>
+                  <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 0.5, fontSize: '1.2rem' }}>
                     {action.title}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#9ca3af', fontSize: '0.85rem' }}>
+                  <Typography variant="body2" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>
                     {action.desc}
                   </Typography>
                 </Box>
@@ -210,7 +210,7 @@ export default function DashboardView({
       </Grid>
 
       {/* Bottom Layout - Recent Experiments & Sidebar Metrics */}
-      <Grid container spacing={3} sx={{ width: '100%', margin: 0 }}>
+      <Grid container spacing={3}>
         {/* Recent Experiments Table (70% on large, 100% on small) */}
         <Grid item xs={12} lg={8}>
           <Card sx={{ height: '100%' }}>
