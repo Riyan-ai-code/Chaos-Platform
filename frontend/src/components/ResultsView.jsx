@@ -122,7 +122,7 @@ export default function ResultsView({
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100% !important' }}>
       {/* Header View */}
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -171,7 +171,7 @@ export default function ResultsView({
       </Box>
 
       {currentRun ? (
-        <Grid container spacing={3}>
+        <Grid container spacing={3} sx={{ width: '100% !important' }}>
           {/* Metadata Cards */}
           <Grid item xs={12}>
             <Card>

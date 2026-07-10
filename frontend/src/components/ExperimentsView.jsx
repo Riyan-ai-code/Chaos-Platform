@@ -220,7 +220,7 @@ export default function ExperimentsView({
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5, width: '100%' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5, width: '100% !important' }}>
       {/* Experiments Section */}
       <Card>
         <CardContent sx={{ p: 3 }}>

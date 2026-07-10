@@ -65,7 +65,7 @@ export default function SettingsView({
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100% !important' }}>
       {/* View Header */}
       <Box>
         <Typography variant="h4" sx={{ fontWeight: 700, color: '#fff', mb: 1 }}>
@@ -76,7 +76,7 @@ export default function SettingsView({
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={3} sx={{ width: '100% !important' }}>
         {/* Mock Simulation Settings */}
         <Grid item xs={12} md={7}>
           <Card sx={{ height: '100%' }}>
