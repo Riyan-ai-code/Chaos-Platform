@@ -97,7 +97,7 @@ export default function Sidebar({
                   <ListItemText
                     primary={item.text}
                     primaryTypographyProps={{
-                      fontSize: '0.9rem',
+                      fontSize: '0.95rem',
                       fontWeight: isSelected ? 600 : 500,
                     }}
                   />

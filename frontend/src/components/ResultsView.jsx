@@ -348,7 +348,7 @@ export default function ResultsView({
                         fontFamily: 'monospace',
                         color: color,
                         lineHeight: 1.6,
-                        fontSize: '0.85rem',
+                        fontSize: '0.9rem',
                         whiteSpace: 'pre-wrap',
                         wordBreak: 'break-all',
                       }}
