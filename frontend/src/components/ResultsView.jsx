@@ -190,7 +190,7 @@ export default function ResultsView({
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 0, width: '100%' }}>
                 {/* Col 1 */}
-                <Box sx={{ flex: 1, borderRight: { md: '1px solid rgba(255,255,255,0.05)' }, pr: 3, pb: { xs: 2, md: 0 } }}>
+                <Box sx={{ flex: 1.2, borderRight: { md: '1px solid rgba(255,255,255,0.05)' }, pr: 3, pb: { xs: 2, md: 0 } }}>
                   <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5 }}>
                     Experiment Run
                   </Typography>
@@ -216,7 +216,7 @@ export default function ResultsView({
                 </Box>
 
                 {/* Col 3 */}
-                <Box sx={{ flex: 1, borderRight: { md: '1px solid rgba(255,255,255,0.05)' }, px: { md: 3 }, py: { xs: 2, md: 0 }, borderTop: { xs: '1px solid rgba(255,255,255,0.05)', md: 'none' } }}>
+                <Box sx={{ flex: 1.2, borderRight: { md: '1px solid rgba(255,255,255,0.05)' }, px: { md: 3 }, py: { xs: 2, md: 0 }, borderTop: { xs: '1px solid rgba(255,255,255,0.05)', md: 'none' } }}>
                   <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5 }}>
                     Namespace & Target
                   </Typography>
@@ -239,7 +239,20 @@ export default function ResultsView({
                 </Box>
 
                 {/* Col 5 */}
-                <Box sx={{ flex: 1, pl: { md: 3 }, pt: { xs: 2, md: 0 }, borderTop: { xs: '1px solid rgba(255,255,255,0.05)', md: 'none' }, display: 'flex', flexDirection: 'column', alignItems: { md: 'flex-end', xs: 'flex-start' }, justifyContent: 'center' }}>
+                <Box sx={{ flex: 1.2, borderRight: { md: '1px solid rgba(255,255,255,0.05)' }, px: { md: 3 }, py: { xs: 2, md: 0 }, borderTop: { xs: '1px solid rgba(255,255,255,0.05)', md: 'none' } }}>
+                  <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5 }}>
+                    Execution Time
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#fff', fontWeight: 600 }}>
+                    {formatLocalDate(currentRun.startedAt).split(' ')[1] || 'N/A'}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#9ca3af' }}>
+                    {formatLocalDate(currentRun.startedAt).split(' ')[0] || ''}
+                  </Typography>
+                </Box>
+
+                {/* Col 6 */}
+                <Box sx={{ flex: 1.2, pl: { md: 3 }, pt: { xs: 2, md: 0 }, borderTop: { xs: '1px solid rgba(255,255,255,0.05)', md: 'none' }, display: 'flex', flexDirection: 'column', alignItems: { md: 'flex-end', xs: 'flex-start' }, justifyContent: 'center' }}>
                   <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography variant="caption" sx={{ color: '#9ca3af' }}>Impact:</Typography>
                     <Chip
