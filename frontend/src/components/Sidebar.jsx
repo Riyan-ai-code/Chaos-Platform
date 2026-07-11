@@ -183,7 +183,7 @@ export default function Sidebar({
         width: drawerWidth,
         flexShrink: 0,
         height: '100vh',
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
         left: 0,
         zIndex: 1000,

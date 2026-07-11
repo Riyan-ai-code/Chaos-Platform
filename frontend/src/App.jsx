@@ -230,6 +230,7 @@ export default function App() {
           sx={{
             flexGrow: 1,
             width: 'calc(100vw - 240px) !important',
+            marginLeft: '240px !important',
             p: { xs: 2, sm: 3, md: 4 },
             minWidth: 0, // Prevent grid breakout
           }}
