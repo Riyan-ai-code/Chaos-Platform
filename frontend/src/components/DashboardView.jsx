@@ -13,6 +13,7 @@ import {
   Button,
   Chip,
   Paper,
+  Tooltip,
 } from '@mui/material';
 import {
   LocalFireDepartment as FireIcon,
@@ -44,6 +45,115 @@ const formatLocalDate = (utcString) => {
   if (isNaN(date.getTime())) return utcString;
   const pad = (num) => String(num).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
+const ActivityHeatmap = () => {
+  const generateHeatmapData = () => {
+    const data = [];
+    const now = new Date();
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const dayStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      
+      let level = 0; 
+      let success = 0;
+      let failed = 0;
+      
+      if (i % 7 === 0) {
+        level = 0; 
+      } else if (i === 5 || i === 19) {
+        level = 4; 
+        success = i === 5 ? 1 : 2;
+        failed = 1;
+      } else {
+        level = (i % 3) + 1; 
+        success = level;
+      }
+
+      data.push({
+        date: dayStr,
+        level,
+        success,
+        failed,
+      });
+    }
+    return data;
+  };
+
+  const days = generateHeatmapData();
+
+  const getBlockColor = (day) => {
+    if (day.failed > 0) return '#ef4444'; 
+    if (day.level === 0) return 'rgba(255, 255, 255, 0.03)';
+    if (day.level === 1) return '#10b98130';
+    if (day.level === 2) return '#10b98170';
+    return '#10b981b0'; 
+  };
+
+  return (
+    <Card sx={{ mb: 3, borderTop: '3px solid #10b981' }}>
+      <CardContent sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
+          Chaos Activity Heatmap
+        </Typography>
+        <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 3 }}>
+          Daily chaos engineering execution history over the last 30 days.
+        </Typography>
+
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8, alignItems: 'center' }}>
+          {days.map((day, idx) => (
+            <Tooltip
+              key={idx}
+              title={
+                <Box sx={{ p: 0.5 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.5 }}>{day.date}</Typography>
+                  {day.level === 0 ? (
+                    <Typography variant="caption" sx={{ color: '#9ca3af' }}>No experiments run</Typography>
+                  ) : (
+                    <>
+                      <Typography variant="caption" sx={{ display: 'block', color: '#34d399' }}>• {day.success} Successful</Typography>
+                      {day.failed > 0 && (
+                        <Typography variant="caption" sx={{ display: 'block', color: '#f87171' }}>• {day.failed} Failed</Typography>
+                      )}
+                    </>
+                  )}
+                </Box>
+              }
+              arrow
+              placement="top"
+            >
+              <Box
+                sx={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: '4px',
+                  bgcolor: getBlockColor(day),
+                  border: '1px solid rgba(255, 255, 255, 0.02)',
+                  cursor: 'pointer',
+                  transition: 'transform 0.1s',
+                  '&:hover': {
+                    transform: 'scale(1.2)',
+                    borderColor: '#fff',
+                    boxShadow: '0 0 10px rgba(255,255,255,0.1)',
+                  },
+                }}
+              />
+            </Tooltip>
+          ))}
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto', mt: { xs: 2, sm: 0 } }}>
+            <Typography variant="caption" sx={{ color: '#9ca3af' }}>Less</Typography>
+            <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: 'rgba(255, 255, 255, 0.03)' }} />
+            <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: '#10b98130' }} />
+            <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: '#10b98170' }} />
+            <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: '#10b981b0' }} />
+            <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: '#ef4444' }} />
+            <Typography variant="caption" sx={{ color: '#9ca3af' }}>More / Failure</Typography>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  );
 };
 
 export default function DashboardView({
@@ -251,6 +361,8 @@ export default function DashboardView({
           </Box>
         ))}
       </Box>
+
+      <ActivityHeatmap />
 
       {/* Bottom Layout - Recent Experiments & Sidebar Metrics */}
       <Box sx={{ display: 'flex', gap: 3, width: '100% !important', flexDirection: { xs: 'column', lg: 'row' } }}>

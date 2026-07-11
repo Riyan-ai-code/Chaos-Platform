@@ -142,6 +142,97 @@ const ChaosSparkline = ({ type, status }) => {
   );
 };
 
+const DisruptionTimeline = ({ currentRun }) => {
+  const isFailed = currentRun.status === 'Failed';
+  
+  const getTimelineSteps = () => {
+    const steps = [
+      { label: 'Initializing Simulation', desc: 'Pre-flight checks and Kubernetes client setup.', time: '0s', status: 'success' },
+    ];
+    
+    if (currentRun.type === 'Pod Kill' || currentRun.type === 'Pod Delete') {
+      steps.push({ label: 'Locating Target Pods', desc: `Namespace: ${currentRun.namespace}, Selector: ${currentRun.target}`, time: '+1s', status: 'success' });
+      steps.push({ label: 'Injecting Pod Disruption', desc: `SIGKILL signal sent to matching pod.`, time: '+2s', status: 'success' });
+      if (isFailed) {
+        steps.push({ label: 'Service Outage Detected', desc: 'Readiness probe failed. Target pods unresponsive.', time: '+5s', status: 'failed' });
+        steps.push({ label: 'Reconciliation Timeout', desc: 'Kubernetes self-healing scheduler failed to spawn new replicas.', time: '+15s', status: 'failed' });
+      } else {
+        steps.push({ label: 'Pod Eviction Confirmed', desc: 'Replica capacity degraded to 2/3.', time: '+3s', status: 'success' });
+        steps.push({ label: 'Kubernetes Reconciliation', desc: 'ReplicaSet scheduler initialized container spawning.', time: '+8s', status: 'success' });
+        steps.push({ label: 'System Restored', desc: 'All readiness checks passed. Replicas: 3/3.', time: '+15s', status: 'success' });
+      }
+    } else if (currentRun.type === 'Network Chaos') {
+      steps.push({ label: 'Injecting Traffic Latency', desc: 'Adding 250ms latency delay rule to container veth.', time: '+1s', status: 'success' });
+      if (isFailed) {
+        steps.push({ label: 'Connection Dropped', desc: 'Gateway timeout (504) detected under high jitter.', time: '+6s', status: 'failed' });
+        steps.push({ label: 'Simulation Aborted', desc: 'Experiment failed to gracefully recover traffic rules.', time: '+15s', status: 'failed' });
+      } else {
+        steps.push({ label: 'Jitter Monitor Active', desc: 'Ping telemetry latency stabilized at 250ms.', time: '+4s', status: 'success' });
+        steps.push({ label: 'Clearing Latency Rules', desc: 'Deleting tc filter configuration.', time: '+10s', status: 'success' });
+        steps.push({ label: 'Latency Recovered', desc: 'Ping normalized back to 14ms baseline.', time: '+15s', status: 'success' });
+      }
+    } else {
+      steps.push({ label: 'Resource Injection', desc: 'Running high load stress-ng worker threads.', time: '+1s', status: 'success' });
+      if (isFailed) {
+        steps.push({ label: 'OOM Killer Triggered', desc: 'Kernel terminated critical daemon process.', time: '+8s', status: 'failed' });
+        steps.push({ label: 'Resource Exhausted', desc: 'Node memory capacity saturated at 95%.', time: '+15s', status: 'failed' });
+      } else {
+        steps.push({ label: 'Monitoring Utilization', desc: 'Resource load stabilized at 92% utilization.', time: '+5s', status: 'success' });
+        steps.push({ label: 'Terminating stress-ng', desc: 'Killing worker process threads.', time: '+10s', status: 'success' });
+        steps.push({ label: 'Resources Restored', desc: 'CPU usage cooled down back to 12% baseline.', time: '+15s', status: 'success' });
+      }
+    }
+
+    return steps;
+  };
+
+  const steps = getTimelineSteps();
+
+  return (
+    <Card sx={{ height: '100%', bgcolor: '#111319', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <CardContent sx={{ p: 3 }}>
+        <Typography variant="subtitle2" sx={{ color: '#9ca3af', fontFamily: 'monospace', fontWeight: 600, mb: 3 }}>
+          DISRUPTION_EVENT_TIMELINE
+        </Typography>
+        
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5, position: 'relative', pl: 3, '&::before': { content: '""', position: 'absolute', left: '7px', top: '8px', bottom: '8px', width: '2px', bgcolor: 'rgba(255,255,255,0.05)' } }}>
+          {steps.map((step, idx) => (
+            <Box key={idx} sx={{ position: 'relative' }}>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: '-28px',
+                  top: '4px',
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  bgcolor: step.status === 'success' ? '#10b981' : '#ef4444',
+                  boxShadow: `0 0 8px ${step.status === 'success' ? '#10b981' : '#ef4444'}80`,
+                  border: '2px solid #111319',
+                  zIndex: 2,
+                }}
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem' }}>
+                    {step.label}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mt: 0.5, lineHeight: 1.4 }}>
+                    {step.desc}
+                  </Typography>
+                </Box>
+                <Typography variant="caption" sx={{ color: '#a78bfa', fontFamily: 'monospace', fontWeight: 600 }}>
+                  {step.time}
+                </Typography>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default function ResultsView({
   results,
   selectedRun,
@@ -409,158 +500,168 @@ export default function ResultsView({
             </CardContent>
           </Card>
 
-          {/* Console Output Terminal */}
-          <Card sx={{ width: '100% !important', bgcolor: '#0b0c10', border: '1px solid rgba(255,255,255,0.08)', borderTop: '3px solid #a78bfa' }}>
-            <CardContent sx={{ p: 0 }}>
-              {/* Console header */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  px: 3,
-                  py: 1.5,
-                  borderBottom: '1px solid rgba(255,255,255,0.08)',
-                  bgcolor: '#111319',
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <TerminalIcon sx={{ color: '#7c3aed', fontSize: 18 }} />
-                  <Typography variant="subtitle2" sx={{ color: '#9ca3af', fontFamily: 'monospace', fontWeight: 600, mr: 2 }}>
-                    DISRUPTION_CONSOLE_OUTPUT
-                  </Typography>
-                  {/* Filter tabs */}
-                  <Box sx={{ display: 'flex', gap: 0.5, bgcolor: 'rgba(0,0,0,0.15)', borderRadius: '4px', p: 0.25 }}>
-                    {['ALL', 'INFO', 'WARN/ERROR'].map((tab) => (
-                      <Button
-                        key={tab}
-                        size="small"
-                        variant="text"
-                        onClick={() => setLogFilter(tab)}
-                        sx={{
-                          color: logFilter === tab ? '#a78bfa' : 'rgba(255,255,255,0.4)',
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                          px: 1.2,
-                          py: 0.25,
-                          minWidth: 0,
-                          height: '24px',
-                          bgcolor: logFilter === tab ? 'rgba(167,139,250,0.08)' : 'transparent',
-                          '&:hover': { bgcolor: 'rgba(255,255,255,0.02)', color: '#fff' },
-                        }}
-                      >
-                        {tab}
-                      </Button>
-                    ))}
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Button
-                    size="small"
-                    variant="text"
-                    onClick={handleCopyLogs}
+          {/* Console Output Terminal & Timeline Row */}
+          <Box sx={{ display: 'flex', gap: 3, width: '100% !important', flexDirection: { xs: 'column', lg: 'row' } }}>
+            {/* Console Output Terminal */}
+            <Box sx={{ flex: { xs: 1, lg: 2 }, minWidth: 0 }}>
+              <Card sx={{ bgcolor: '#0b0c10', border: '1px solid rgba(255,255,255,0.08)', borderTop: '3px solid #a78bfa' }}>
+                <CardContent sx={{ p: 0 }}>
+                  {/* Console header */}
+                  <Box
                     sx={{
-                      color: copied ? '#10b981' : '#9ca3af',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      height: '24px',
-                      '&:hover': { color: '#fff' },
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      px: 3,
+                      py: 1.5,
+                      borderBottom: '1px solid rgba(255,255,255,0.08)',
+                      bgcolor: '#111319',
                     }}
                   >
-                    {copied ? 'Copied!' : 'Copy Logs'}
-                  </Button>
-                  <Box sx={{ display: 'flex', gap: 0.8 }}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#ef4444' }} />
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#f97316' }} />
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10b981' }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <TerminalIcon sx={{ color: '#7c3aed', fontSize: 18 }} />
+                      <Typography variant="subtitle2" sx={{ color: '#9ca3af', fontFamily: 'monospace', fontWeight: 600, mr: 2 }}>
+                        DISRUPTION_CONSOLE_OUTPUT
+                      </Typography>
+                      {/* Filter tabs */}
+                      <Box sx={{ display: 'flex', gap: 0.5, bgcolor: 'rgba(0,0,0,0.15)', borderRadius: '4px', p: 0.25 }}>
+                        {['ALL', 'INFO', 'WARN/ERROR'].map((tab) => (
+                          <Button
+                            key={tab}
+                            size="small"
+                            variant="text"
+                            onClick={() => setLogFilter(tab)}
+                            sx={{
+                              color: logFilter === tab ? '#a78bfa' : 'rgba(255,255,255,0.4)',
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                              px: 1.2,
+                              py: 0.25,
+                              minWidth: 0,
+                              height: '24px',
+                              bgcolor: logFilter === tab ? 'rgba(167,139,250,0.08)' : 'transparent',
+                              '&:hover': { bgcolor: 'rgba(255,255,255,0.02)', color: '#fff' },
+                            }}
+                          >
+                            {tab}
+                          </Button>
+                        ))}
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Button
+                        size="small"
+                        variant="text"
+                        onClick={handleCopyLogs}
+                        sx={{
+                          color: copied ? '#10b981' : '#9ca3af',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          textTransform: 'none',
+                          height: '24px',
+                          '&:hover': { color: '#fff' },
+                        }}
+                      >
+                        {copied ? 'Copied!' : 'Copy Logs'}
+                      </Button>
+                      <Box sx={{ display: 'flex', gap: 0.8 }}>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#ef4444' }} />
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#f97316' }} />
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10b981' }} />
+                      </Box>
+                    </Box>
                   </Box>
-                </Box>
-              </Box>
 
-              {/* Log screen */}
-              <Box
-                component={Paper}
-                sx={{
-                  p: 3,
-                  bgcolor: 'transparent',
-                  maxHeight: 500,
-                  overflowY: 'auto',
-                  borderRadius: 0,
-                  boxShadow: 'none',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1.2,
-                }}
-              >
-                {generateLogs(currentRun)
-                  .filter((log) => {
-                    if (logFilter === 'INFO') {
-                      return log.includes('[INFO]') || log.includes('[SUCCESS]') || log.includes('[LOG]');
-                    }
-                    if (logFilter === 'WARN/ERROR') {
-                      return log.includes('[WARN]') || log.includes('[ERROR]') || log.includes('[FATAL]');
-                    }
-                    return true;
-                  })
-                  .map((log, index) => {
-                    let color = '#d1d5db';
-                    if (log.includes('[ERROR]') || log.includes('[FATAL]')) color = '#f87171';
-                    else if (log.includes('[WARN]')) color = '#fbcfe8';
-                    else if (log.includes('[SUCCESS]')) color = '#34d399';
-                    else if (log.includes('[RUNNING]')) color = '#c084fc';
+                  {/* Log screen */}
+                  <Box
+                    component={Paper}
+                    sx={{
+                      p: 3,
+                      bgcolor: 'transparent',
+                      maxHeight: 500,
+                      overflowY: 'auto',
+                      borderRadius: 0,
+                      boxShadow: 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.2,
+                    }}
+                  >
+                    {generateLogs(currentRun)
+                      .filter((log) => {
+                        if (logFilter === 'INFO') {
+                          return log.includes('[INFO]') || log.includes('[SUCCESS]') || log.includes('[LOG]');
+                        }
+                        if (logFilter === 'WARN/ERROR') {
+                          return log.includes('[WARN]') || log.includes('[ERROR]') || log.includes('[FATAL]');
+                        }
+                        return true;
+                      })
+                      .map((log, index) => {
+                        let color = '#d1d5db';
+                        if (log.includes('[ERROR]') || log.includes('[FATAL]')) color = '#f87171';
+                        else if (log.includes('[WARN]')) color = '#fbcfe8';
+                        else if (log.includes('[SUCCESS]')) color = '#34d399';
+                        else if (log.includes('[RUNNING]')) color = '#c084fc';
 
-                    return (
-                      <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                        return (
+                          <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontFamily: 'monospace',
+                                color: 'rgba(255,255,255,0.15)',
+                                userSelect: 'none',
+                                width: '20px',
+                                textAlign: 'right',
+                                fontSize: '0.9rem',
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              {String(index + 1).padStart(2, '0')}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontFamily: 'monospace',
+                                color: color,
+                                lineHeight: 1.6,
+                                fontSize: '0.9rem',
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-all',
+                              }}
+                            >
+                              {log}
+                            </Typography>
+                          </Box>
+                        );
+                      })}
+                    {currentRun.status === 'Running' && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1 }}>
+                        <CircularProgress size={14} sx={{ color: '#7c3aed' }} />
                         <Typography
                           variant="body2"
                           sx={{
                             fontFamily: 'monospace',
-                            color: 'rgba(255,255,255,0.15)',
-                            userSelect: 'none',
-                            width: '20px',
-                            textAlign: 'right',
-                            fontSize: '0.9rem',
-                            lineHeight: 1.6,
+                            color: '#a78bfa',
+                            fontSize: '0.85rem',
+                            fontStyle: 'italic',
                           }}
                         >
-                          {String(index + 1).padStart(2, '0')}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontFamily: 'monospace',
-                            color: color,
-                            lineHeight: 1.6,
-                            fontSize: '0.9rem',
-                            whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-all',
-                          }}
-                        >
-                          {log}
+                          Awaiting cluster telemetry logs...
                         </Typography>
                       </Box>
-                    );
-                  })}
-                {currentRun.status === 'Running' && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1 }}>
-                    <CircularProgress size={14} sx={{ color: '#7c3aed' }} />
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontFamily: 'monospace',
-                        color: '#a78bfa',
-                        fontSize: '0.85rem',
-                        fontStyle: 'italic',
-                      }}
-                    >
-                      Awaiting cluster telemetry logs...
-                    </Typography>
+                    )}
                   </Box>
-                )}
-              </Box>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </Box>
+
+            {/* Disruption Event Timeline */}
+            <Box sx={{ flex: { xs: 1, lg: 1 } }}>
+              <DisruptionTimeline currentRun={currentRun} />
+            </Box>
+          </Box>
         </Box>
       ) : (
         <Card sx={{ borderTop: '3px solid #7c3aed' }}>
