@@ -53,33 +53,33 @@ export default function DashboardView({
       desc: 'Kill Random Pods',
       type: 'Pod Kill',
       icon: <SkullIconSVG color="#10b981" size={40} />,
-      borderColor: 'rgba(16, 185, 129, 0.4)',
+      borderColor: 'rgba(16, 185, 129, 0.3)',
       activeBorderColor: '#10b981',
-      bgGlow: 'rgba(16, 185, 129, 0.25)',
-      bgColor: '#06170f',
-      iconBg: 'rgba(16, 185, 129, 0.08)',
+      bgGlow: 'rgba(16, 185, 129, 0.35)',
+      bgColor: 'linear-gradient(135deg, #091a12 0%, #032a18 100%)',
+      iconBg: 'rgba(16, 185, 129, 0.12)',
     },
     {
       title: 'Network Latency',
       desc: 'Inject Latency',
       type: 'Network Chaos',
       icon: <WaveIconSVG color="#3b82f6" size={40} />,
-      borderColor: 'rgba(59, 130, 246, 0.4)',
+      borderColor: 'rgba(59, 130, 246, 0.3)',
       activeBorderColor: '#3b82f6',
-      bgGlow: 'rgba(59, 130, 246, 0.25)',
-      bgColor: '#051122',
-      iconBg: 'rgba(59, 130, 246, 0.08)',
+      bgGlow: 'rgba(59, 130, 246, 0.35)',
+      bgColor: 'linear-gradient(135deg, #091629 0%, #042454 100%)',
+      iconBg: 'rgba(59, 130, 246, 0.12)',
     },
     {
       title: 'CPU/Memory Stress',
       desc: 'Stress Resources',
       type: 'CPU Stress',
       icon: <FireIcon sx={{ fontSize: 40, color: '#f97316' }} />,
-      borderColor: 'rgba(249, 115, 22, 0.4)',
+      borderColor: 'rgba(249, 115, 22, 0.3)',
       activeBorderColor: '#f97316',
-      bgGlow: 'rgba(249, 115, 22, 0.25)',
-      bgColor: '#150d07',
-      iconBg: 'rgba(249, 115, 22, 0.08)',
+      bgGlow: 'rgba(249, 115, 22, 0.35)',
+      bgColor: 'linear-gradient(135deg, #1b0f07 0%, #3a1c06 100%)',
+      iconBg: 'rgba(249, 115, 22, 0.12)',
     },
   ];
 
@@ -214,7 +214,7 @@ export default function DashboardView({
       <Box sx={{ display: 'flex', gap: 3, width: '100% !important', flexDirection: { xs: 'column', lg: 'row' } }}>
         {/* Recent Experiments Table (66.6% width) */}
         <Box sx={{ flex: 2, minWidth: 0 }}>
-          <Card sx={{ height: '100%' }}>
+          <Card sx={{ height: '100%', borderTop: '3px solid #7c3aed' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 3 }}>
                 Recent Experiments
@@ -306,7 +306,7 @@ export default function DashboardView({
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
             {/* Summary Metrics */}
-            <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '3px solid #3b82f6' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 3 }}>
                   Summary
@@ -358,7 +358,7 @@ export default function DashboardView({
             </Card>
 
             {/* Cluster Health status */}
-            <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: `3px solid ${clusterStatus === 'Healthy' ? '#10b981' : clusterStatus === 'Degraded' ? '#f97316' : '#ef4444'}` }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 2 }}>
                   Cluster Health
