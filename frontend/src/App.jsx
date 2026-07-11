@@ -65,7 +65,18 @@ export default function App() {
     successRate: 0.8,
     simulationSpeed: 3, // in seconds
     autoHeal: true,
+    voiceAlerts: true,
   });
+
+  const announceSpeech = (text) => {
+    if (settings.voiceAlerts && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.05;
+      utterance.pitch = 0.95;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
   const commands = [
     { text: 'Go to Dashboard', category: 'Navigation', action: () => { setSelectedView('dashboard'); } },
@@ -176,6 +187,11 @@ export default function App() {
   };
 
   const handleRunExperiment = async (expId) => {
+    const expObj = experiments.find((e) => e.id === expId);
+    if (expObj) {
+      announceSpeech(`Chaos simulation initiated. Executing ${expObj.type} scenario on target resource ${expObj.target}.`);
+    }
+
     // Optimistic UI updates
     setExperiments((prev) =>
       prev.map((e) => (e.id === expId ? { ...e, status: 'Running' } : e))
@@ -227,6 +243,12 @@ export default function App() {
         const impactOptions = isSuccess ? ['Low', 'Medium'] : ['Medium', 'High'];
         const finalImpact = impactOptions[Math.floor(Math.random() * impactOptions.length)];
 
+        if (isSuccess) {
+          announceSpeech(`Chaos simulation resolved successfully. All systems operational.`);
+        } else {
+          announceSpeech(`Warning. Resiliency SLA check failed. Container recovery limit exceeded.`);
+        }
+
         setExperiments((prevExps) => {
           const idx = prevExps.findIndex((e) => e.id === expId);
           if (idx === -1) return prevExps;
@@ -252,6 +274,7 @@ export default function App() {
 
   const handleSetClusterStatus = async (status) => {
     setClusterStatus(status);
+    announceSpeech(`Cluster status override set to ${status}.`);
     try {
       await fetch(`${API_BASE}/cluster/health/${status}`, {
         method: 'POST',

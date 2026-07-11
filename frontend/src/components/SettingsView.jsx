@@ -37,6 +37,7 @@ export default function SettingsView({
   const [successRate, setSuccessRate] = useState((settings?.successRate ?? 0.8) * 100);
   const [simulationSpeed, setSimulationSpeed] = useState(settings?.simulationSpeed ?? 3);
   const [autoHeal, setAutoHeal] = useState(settings?.autoHeal ?? true);
+  const [voiceAlerts, setVoiceAlerts] = useState(settings?.voiceAlerts ?? true);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [newNamespace, setNewNamespace] = useState('');
   const [namespaces, setNamespaces] = useState(['target-zone', 'default', 'kube-system', 'production-gate']);
@@ -46,6 +47,7 @@ export default function SettingsView({
       successRate: successRate / 100,
       simulationSpeed: simulationSpeed,
       autoHeal: autoHeal,
+      voiceAlerts: voiceAlerts,
     });
     setNotificationOpen(true);
   };
@@ -54,6 +56,7 @@ export default function SettingsView({
     setSuccessRate(80);
     setSimulationSpeed(3);
     setAutoHeal(true);
+    setVoiceAlerts(true);
   };
 
   const handleAddNamespace = (e) => {
@@ -177,6 +180,28 @@ export default function SettingsView({
                       <Switch
                         checked={autoHeal}
                         onChange={(e) => setAutoHeal(e.target.checked)}
+                        color="secondary"
+                      />
+                    }
+                    label=""
+                  />
+                </Box>
+
+                {/* Voice Alerts Switch */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
+                  <Box sx={{ pr: 2 }}>
+                    <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 600, mb: 0.5 }}>
+                      Enable Synthetic Voice Operator Alerts
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#9ca3af' }}>
+                      Speak alerts audibly using text-to-speech voice notifications during experiment runs and GKE outages.
+                    </Typography>
+                  </Box>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={voiceAlerts}
+                        onChange={(e) => setVoiceAlerts(e.target.checked)}
                         color="secondary"
                       />
                     }

@@ -14,6 +14,7 @@ import {
   Chip,
   Paper,
   Tooltip,
+  Avatar,
 } from '@mui/material';
 import {
   LocalFireDepartment as FireIcon,
@@ -150,6 +151,227 @@ const ActivityHeatmap = () => {
             <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: '#ef4444' }} />
             <Typography variant="caption" sx={{ color: '#9ca3af' }}>More / Failure</Typography>
           </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+const TrafficTopologyMap = ({ results }) => {
+  const latestRun = results[0];
+  const isChaosActive = latestRun && latestRun.status === 'Running';
+  const targetResource = isChaosActive ? latestRun.target : '';
+  const chaosType = isChaosActive ? latestRun.type : '';
+
+  const nodes = [
+    { id: 'ingress', label: 'ingress-gateway', x: 80, y: 100, color: '#3b82f6', isTarget: false },
+    { id: 'web-app', label: 'web-app', x: 260, y: 100, color: '#10b981', isTarget: targetResource.toLowerCase().includes('web') },
+    { id: 'payment-svc', label: 'payment-svc', x: 460, y: 50, color: '#10b981', isTarget: targetResource.toLowerCase().includes('payment') },
+    { id: 'auth-service', label: 'auth-service', x: 460, y: 150, color: '#10b981', isTarget: targetResource.toLowerCase().includes('auth') || targetResource.toLowerCase().includes('api') },
+    { id: 'db-postgres', label: 'db-postgres', x: 680, y: 100, color: '#10b981', isTarget: targetResource.toLowerCase().includes('db') },
+  ];
+
+  const links = [
+    { from: 'ingress', to: 'web-app' },
+    { from: 'web-app', to: 'payment-svc' },
+    { from: 'web-app', to: 'auth-service' },
+    { from: 'payment-svc', to: 'db-postgres' },
+    { from: 'auth-service', to: 'db-postgres' },
+  ];
+
+  const getNodePos = (id) => nodes.find(n => n.id === id);
+
+  return (
+    <Card sx={{ mb: 3, borderTop: '3px solid #3b82f6' }}>
+      <CardContent sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
+          Live GKE Traffic Topology Map
+        </Typography>
+        <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 3 }}>
+          Interactive visualization of inter-service network packets and chaos blast radius impact.
+        </Typography>
+
+        <Box sx={{ width: '100%', bgcolor: 'rgba(0,0,0,0.25)', borderRadius: 2, p: 1, border: '1px solid rgba(255,255,255,0.03)', position: 'relative', overflow: 'hidden' }}>
+          <svg viewBox="0 0 800 200" width="100%" height="150px" style={{ display: 'block' }}>
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.2)" />
+              </marker>
+            </defs>
+
+            {links.map((link, idx) => {
+              const start = getNodePos(link.from);
+              const end = getNodePos(link.to);
+              const isLinkDisrupted = (start.isTarget || end.isTarget) && isChaosActive;
+              let lineColor = 'rgba(255,255,255,0.1)';
+              let flowColor = '#a78bfa';
+              if (isLinkDisrupted) {
+                lineColor = 'rgba(239, 68, 68, 0.2)';
+                flowColor = '#ef4444';
+              }
+              
+              const d = `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
+
+              return (
+                <g key={idx}>
+                  <path d={d} stroke={lineColor} strokeWidth="2" markerEnd="url(#arrow)" />
+                  <path
+                    d={d}
+                    stroke={flowColor}
+                    strokeWidth="2"
+                    strokeDasharray="6, 12"
+                    fill="none"
+                    style={{
+                      animation: isLinkDisrupted && chaosType === 'Network Chaos' 
+                        ? 'flow 3s infinite linear' 
+                        : 'flow 1.5s infinite linear'
+                    }}
+                  />
+                </g>
+              );
+            })}
+
+            {nodes.map((node) => {
+              let nodeColor = node.color;
+              if (node.isTarget && isChaosActive) {
+                nodeColor = '#ef4444';
+              }
+
+              return (
+                <g key={node.id} style={{ cursor: 'pointer' }}>
+                  {node.isTarget && isChaosActive && (
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r="16"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="2"
+                      style={{
+                        animation: 'ping 1.5s infinite ease-out'
+                      }}
+                    />
+                  )}
+                  
+                  <circle
+                    cx={node.x}
+                    cy={node.y}
+                    r="8"
+                    fill={nodeColor}
+                    stroke="#161920"
+                    strokeWidth="2"
+                  />
+                  <text
+                    x={node.x}
+                    y={node.y - 14}
+                    textAnchor="middle"
+                    fill={node.isTarget && isChaosActive ? '#ef4444' : '#fff'}
+                    fontSize="11"
+                    fontWeight={node.isTarget && isChaosActive ? 700 : 500}
+                    style={{ fontFamily: 'monospace' }}
+                  >
+                    {node.label}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </Box>
+        <style>{`
+          @keyframes flow {
+            to {
+              stroke-dashoffset: -18;
+            }
+          }
+          @keyframes ping {
+            0% { r: 8; opacity: 1; }
+            100% { r: 18; opacity: 0; }
+          }
+        `}</style>
+      </CardContent>
+    </Card>
+  );
+};
+
+const ResilienceScoreboard = () => {
+  const scoreboards = [
+    { ns: 'target-zone', grade: 'A+', speed: '12s', badges: ['Healer', 'Fortress'], color: '#10b981' },
+    { ns: 'default', grade: 'B-', speed: '18s', badges: ['Survivor'], color: '#3b82f6' },
+    { ns: 'kube-system', grade: 'C+', speed: '28s', badges: ['Heavyweight'], color: '#f97316' },
+  ];
+
+  return (
+    <Card sx={{ borderTop: '3px solid #10b981' }}>
+      <CardContent sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
+          Resilience Scoreboard
+        </Typography>
+        <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 3 }}>
+          Self-healing grades & performance metrics by namespace.
+        </Typography>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {scoreboards.map((score) => (
+            <Box
+              key={score.ns}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                p: 1.5,
+                bgcolor: 'rgba(0,0,0,0.15)',
+                border: '1px solid rgba(255,255,255,0.03)',
+                borderRadius: 2,
+              }}
+            >
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#fff' }}>
+                  {score.ns}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                  {score.badges.map((badge) => (
+                    <Chip
+                      key={badge}
+                      label={badge}
+                      size="small"
+                      sx={{
+                        fontSize: '0.65rem',
+                        height: 18,
+                        bgcolor: 'rgba(255,255,255,0.03)',
+                        color: '#9ca3af',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        fontWeight: 600,
+                      }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+              
+              <Box sx={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', fontSize: '0.65rem' }}>
+                    SLA Speed
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#fff', fontFamily: 'monospace', fontWeight: 700 }}>
+                    {score.speed}
+                  </Typography>
+                </Box>
+                <Avatar
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: `${score.color}15`,
+                    border: `1px solid ${score.color}40`,
+                    color: score.color,
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
+                  }}
+                >
+                  {score.grade}
+                </Avatar>
+              </Box>
+            </Box>
+          ))}
         </Box>
       </CardContent>
     </Card>
@@ -362,6 +584,8 @@ export default function DashboardView({
         ))}
       </Box>
 
+      <TrafficTopologyMap results={results} />
+
       <ActivityHeatmap />
 
       {/* Bottom Layout - Recent Experiments & Sidebar Metrics */}
@@ -556,6 +780,8 @@ export default function DashboardView({
                 </Typography>
               </CardContent>
             </Card>
+
+            <ResilienceScoreboard />
 
             {/* Disruption Recovery Speed Chart */}
             <Card sx={{ borderTop: '3px solid #7c3aed' }}>
