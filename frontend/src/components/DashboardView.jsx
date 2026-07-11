@@ -379,6 +379,11 @@ export default function DashboardView({
                 position: 'relative',
                 overflow: 'hidden',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  transform: 'translateY(-4px) !important',
+                  boxShadow: `0 12px 30px ${action.borderColor}40 !important`,
+                  borderColor: action.borderColor,
+                },
                 '&::before': {
                   content: '""',
                   position: 'absolute',
