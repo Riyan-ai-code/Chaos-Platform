@@ -34,6 +34,18 @@ const WaveIconSVG = ({ color, size = 32, ...props }) => (
   </svg>
 );
 
+const formatLocalDate = (utcString) => {
+  if (!utcString) return '';
+  let isoString = utcString;
+  if (!utcString.includes('T')) {
+    isoString = utcString.trim().replace(' ', 'T') + 'Z';
+  }
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return utcString;
+  const pad = (num) => String(num).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
 export default function DashboardView({
   experiments,
   results,
@@ -262,7 +274,7 @@ export default function DashboardView({
                         </TableCell>
                         <TableCell>{getStatusChip(run.status)}</TableCell>
                         <TableCell sx={{ color: '#9ca3af' }}>{run.namespace}</TableCell>
-                        <TableCell sx={{ color: '#9ca3af', fontSize: '0.85rem' }}>{run.startedAt}</TableCell>
+                        <TableCell sx={{ color: '#9ca3af', fontSize: '0.85rem' }}>{formatLocalDate(run.startedAt)}</TableCell>
                         <TableCell align="right">
                           <Button
                             variant="contained"

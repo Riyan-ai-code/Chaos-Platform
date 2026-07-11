@@ -49,6 +49,18 @@ const WaveIconSVG = ({ color, size = 32, ...props }) => (
   </svg>
 );
 
+const formatLocalDate = (utcString) => {
+  if (!utcString) return '';
+  let isoString = utcString;
+  if (!utcString.includes('T')) {
+    isoString = utcString.trim().replace(' ', 'T') + 'Z';
+  }
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return utcString;
+  const pad = (num) => String(num).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
 export default function ExperimentsView({
   experiments,
   results,
@@ -610,7 +622,7 @@ export default function ExperimentsView({
                     </TableCell>
                     <TableCell>{getStatusChip(res.status)}</TableCell>
                     <TableCell sx={{ color: '#d1d5db' }}>{res.namespace}</TableCell>
-                    <TableCell sx={{ color: '#9ca3af', fontSize: '0.85rem' }}>{res.startedAt}</TableCell>
+                    <TableCell sx={{ color: '#9ca3af', fontSize: '0.85rem' }}>{formatLocalDate(res.startedAt)}</TableCell>
                     <TableCell sx={{ color: '#d1d5db' }}>{res.duration}</TableCell>
                     <TableCell>{getImpactChip(res.impact)}</TableCell>
                     <TableCell align="right">

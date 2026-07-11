@@ -23,6 +23,18 @@ import {
   Download as DownloadIcon,
 } from '@mui/icons-material';
 
+const formatLocalDate = (utcString) => {
+  if (!utcString) return '';
+  let isoString = utcString;
+  if (!utcString.includes('T')) {
+    isoString = utcString.trim().replace(' ', 'T') + 'Z';
+  }
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return utcString;
+  const pad = (num) => String(num).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
 export default function ResultsView({
   results,
   selectedRun,
@@ -54,7 +66,8 @@ export default function ResultsView({
   const generateLogs = (run) => {
     if (!run) return [];
     
-    const timeBase = run.startedAt.split(' ')[1] || '12:00:00';
+    const localStartedAt = formatLocalDate(run.startedAt);
+    const timeBase = localStartedAt.split(' ')[1] || '12:00:00';
     const [h, m, s] = timeBase.split(':').map(Number);
     const pad = (num) => String(num).padStart(2, '0');
     const t = (offset) => {
@@ -162,7 +175,7 @@ export default function ResultsView({
             >
               {results.map((r) => (
                 <MenuItem key={r.runId} value={r.runId}>
-                  {r.name} ({r.startedAt.split(' ')[1] || r.runId})
+                  {r.name} ({formatLocalDate(r.startedAt).split(' ')[1] || r.runId})
                 </MenuItem>
               ))}
             </Select>
