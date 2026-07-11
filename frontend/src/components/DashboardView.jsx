@@ -304,9 +304,9 @@ export default function DashboardView({
 
         {/* Right Side Summary Panel (33.3% width) */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
             {/* Summary Metrics */}
-            <Card>
+            <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 3 }}>
                   Summary
@@ -358,7 +358,7 @@ export default function DashboardView({
             </Card>
 
             {/* Cluster Health status */}
-            <Card>
+            <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 2 }}>
                   Cluster Health
