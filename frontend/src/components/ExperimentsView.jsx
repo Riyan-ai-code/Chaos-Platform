@@ -120,7 +120,13 @@ export default function ExperimentsView({
     const isCompleted = status === 'Completed';
     const isFailed = status === 'Failed';
     const isRunning = status === 'Running';
-    const color = isCompleted ? '#10b981' : isFailed ? '#ef4444' : '#a78bfa';
+    const isReady = status === 'Ready';
+    
+    let color = '#9ca3af';
+    if (isCompleted) color = '#10b981';
+    else if (isFailed) color = '#ef4444';
+    else if (isRunning) color = '#a78bfa';
+    else if (isReady) color = '#3b82f6';
 
     return (
       <Chip
@@ -140,18 +146,9 @@ export default function ExperimentsView({
         label={status}
         size="small"
         sx={{
-          bgcolor: isCompleted
-            ? 'rgba(16, 185, 129, 0.1)'
-            : isFailed
-            ? 'rgba(239, 68, 68, 0.1)'
-            : 'rgba(124, 58, 237, 0.1)',
+          bgcolor: `${color}15`,
           color: color,
-          border: '1px solid',
-          borderColor: isCompleted
-            ? 'rgba(16, 185, 129, 0.2)'
-            : isFailed
-            ? 'rgba(239, 68, 68, 0.2)'
-            : 'rgba(124, 58, 237, 0.2)',
+          border: `1px solid ${color}30`,
           fontSize: '0.75rem',
           fontWeight: 600,
           px: isRunning ? 0 : 0.5,
@@ -196,6 +193,7 @@ export default function ExperimentsView({
   const getTypeColor = (type) => {
     switch (type) {
       case 'Pod Kill':
+      case 'Pod Delete':
         return '#10b981';
       case 'Network Chaos':
         return '#3b82f6';
