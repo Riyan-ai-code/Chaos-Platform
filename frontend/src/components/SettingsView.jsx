@@ -76,9 +76,9 @@ export default function SettingsView({
         </Typography>
       </Box>
 
-      <Grid container spacing={3} sx={{ width: '100% !important' }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3, width: '100% !important' }}>
         {/* Mock Simulation Settings */}
-        <Grid item xs={12} md={7}>
+        <Box sx={{ flex: 1.4, minWidth: 0 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 3 }}>
@@ -172,10 +172,10 @@ export default function SettingsView({
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Right Panel - Cluster Details & Namespaces */}
-        <Grid item xs={12} md={5}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Cluster Status Tweak */}
             <Card>
@@ -187,7 +187,7 @@ export default function SettingsView({
                   Active cluster is <strong style={{ color: '#fff' }}>{currentCluster}</strong>. Select the status you want to simulate:
                 </Typography>
 
-                <Grid container spacing={1.5}>
+                <Grid container spacing={1.5} sx={{ width: '100% !important', margin: '0 !important' }}>
                   {['Healthy', 'Degraded', 'Critical'].map((status) => {
                     const isActive = clusterStatus === status;
                     let activeColor = '#7c3aed';
@@ -275,8 +275,8 @@ export default function SettingsView({
               </CardContent>
             </Card>
           </Box>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Snackbar alerts */}
       <Snackbar
