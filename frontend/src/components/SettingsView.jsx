@@ -68,7 +68,7 @@ export default function SettingsView({
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100% !important' }}>
       {/* View Header */}
       <Box>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: '#fff', mb: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 800, color: '#fff', mb: 1, letterSpacing: '-0.02em' }}>
           Settings
         </Typography>
         <Typography variant="body2" sx={{ color: '#9ca3af' }}>

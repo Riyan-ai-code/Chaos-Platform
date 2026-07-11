@@ -154,7 +154,7 @@ export default function ResultsView({
           >
             Back
           </Button>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#fff' }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
             Experiment Logs
           </Typography>
         </Box>

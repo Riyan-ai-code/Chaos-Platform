@@ -246,7 +246,7 @@ export default function ExperimentsView({
             }}
           >
             <Box>
-              <Typography variant="h5" sx={{ color: '#fff', fontWeight: 700 }}>
+              <Typography variant="h4" sx={{ color: '#fff', fontWeight: 800, letterSpacing: '-0.02em' }}>
                 Experiments
               </Typography>
               <Typography variant="body2" sx={{ color: '#9ca3af', mt: 0.5 }}>

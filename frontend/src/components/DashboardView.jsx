@@ -161,7 +161,7 @@ export default function DashboardView({
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100% !important', flexGrow: 1 }}>
       {/* View Header */}
       <Box>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: '#fff', mb: 0 }}>
+        <Typography variant="h4" sx={{ fontWeight: 800, color: '#fff', mb: 0, letterSpacing: '-0.02em' }}>
           Dashboard
         </Typography>
       </Box>
