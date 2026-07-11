@@ -79,7 +79,7 @@ export default function SettingsView({
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3, width: '100% !important' }}>
         {/* Mock Simulation Settings */}
         <Box sx={{ flex: 1.4, minWidth: 0 }}>
-          <Card sx={{ height: '100%' }}>
+          <Card sx={{ height: '100%', borderTop: '3px solid #7c3aed' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 3 }}>
                 Chaos Simulation Configuration
@@ -178,7 +178,7 @@ export default function SettingsView({
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Cluster Status Tweak */}
-            <Card>
+            <Card sx={{ borderTop: `3px solid ${clusterStatus === 'Healthy' ? '#10b981' : clusterStatus === 'Degraded' ? '#f97316' : '#ef4444'}` }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1.5 }}>
                   Cluster Status (Override)
@@ -223,7 +223,7 @@ export default function SettingsView({
             </Card>
 
             {/* Namespaces Management */}
-            <Card>
+            <Card sx={{ borderTop: '3px solid #7c3aed' }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 2 }}>
                   Namespace Directory

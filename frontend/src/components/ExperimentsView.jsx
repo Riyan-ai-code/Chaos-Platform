@@ -222,7 +222,7 @@ export default function ExperimentsView({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5, width: '100% !important' }}>
       {/* Experiments Section */}
-      <Card>
+      <Card sx={{ borderTop: '3px solid #7c3aed' }}>
         <CardContent sx={{ p: 3 }}>
           {/* Header & Controls */}
           <Box
@@ -473,7 +473,7 @@ export default function ExperimentsView({
       </Card>
 
       {/* Results Section */}
-      <Card>
+      <Card sx={{ borderTop: '3px solid #3b82f6' }}>
         <CardContent sx={{ p: 3 }}>
           {/* Header & Controls */}
           <Box

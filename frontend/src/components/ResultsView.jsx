@@ -173,7 +173,7 @@ export default function ResultsView({
       {currentRun ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100% !important' }}>
           {/* Metadata Cards */}
-          <Card sx={{ width: '100% !important' }}>
+          <Card sx={{ width: '100% !important', borderTop: '3px solid #7c3aed' }}>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 0, width: '100%' }}>
                 {/* Col 1 */}
@@ -265,7 +265,7 @@ export default function ResultsView({
           </Card>
 
           {/* Console Output Terminal */}
-          <Card sx={{ width: '100% !important', bgcolor: '#0b0c10', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <Card sx={{ width: '100% !important', bgcolor: '#0b0c10', border: '1px solid rgba(255,255,255,0.08)', borderTop: '3px solid #a78bfa' }}>
             <CardContent sx={{ p: 0 }}>
               {/* Console header */}
               <Box
@@ -352,7 +352,7 @@ export default function ResultsView({
           </Card>
         </Box>
       ) : (
-        <Card>
+        <Card sx={{ borderTop: '3px solid #7c3aed' }}>
           <CardContent sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="body1" sx={{ color: '#9ca3af' }}>
               No experiment runs available. Navigate to Experiments to launch one.
