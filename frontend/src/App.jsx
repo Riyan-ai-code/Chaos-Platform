@@ -214,7 +214,7 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#0d0e12', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#0d0e12', width: '100vw !important', maxWidth: '100vw !important', overflowX: 'hidden' }}>
         
         {/* Sidebar Component */}
         <Sidebar

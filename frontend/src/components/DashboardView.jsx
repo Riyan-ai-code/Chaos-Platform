@@ -160,7 +160,7 @@ export default function DashboardView({
       {/* Top Cards Grid */}
       <Grid container spacing={3} sx={{ width: '100% !important' }}>
         {quickActions.map((action) => (
-          <Grid item xs={12} md={4} key={action.title}>
+          <Grid item xs={12} sm={12} md={4} lg={4} xl={4} key={action.title}>
             <Card
               onClick={() => handleQuickActionClick(action)}
               sx={{
@@ -212,7 +212,7 @@ export default function DashboardView({
       {/* Bottom Layout - Recent Experiments & Sidebar Metrics */}
       <Grid container spacing={3} sx={{ width: '100% !important' }}>
         {/* Recent Experiments Table (70% on large, 100% on small) */}
-        <Grid item xs={12} lg={8}>
+        <Grid item xs={12} sm={12} md={12} lg={8} xl={8}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 3 }}>
@@ -302,7 +302,7 @@ export default function DashboardView({
         </Grid>
 
         {/* Right Side Summary Panel */}
-        <Grid item xs={12} lg={4}>
+        <Grid item xs={12} sm={12} md={12} lg={4} xl={4}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Summary Metrics */}
             <Card>
